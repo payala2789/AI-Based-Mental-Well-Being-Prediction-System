@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindScore — Mental Health Risk Assessment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+/* ═══════════════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:          #0b0f1a;
+  --surface:     #111827;
+  --surface2:    #1a2236;
+  --border:      rgba(255,255,255,.07);
+  --border2:     rgba(255,255,255,.13);
+  --text:        #e8edf5;
+  --text2:       #8b95a8;
+  --text3:       #4a5568;
+  --accent:      #6366f1;
+  --accent-g:    linear-gradient(135deg,#6366f1,#8b5cf6);
+  --accent-glow: 0 0 40px rgba(99,102,241,.35);
+  --green:       #10b981;
+  --yellow:      #f59e0b;
+  --orange:      #f97316;
+  --red:         #ef4444;
+  --crimson:     #dc2626;
+  --radius-sm:   8px;
+  --radius:      16px;
+  --radius-lg:   24px;
+  --shadow:      0 8px 40px rgba(0,0,0,.45);
+  --transition:  .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BACKGROUND AURORA
+═══════════════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(99,102,241,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(139,92,246,.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════ */
+.page { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 0 1.25rem 5rem; }
+
+/* ═══════════════════════════════════════════════════════
+   HERO HEADER
+═══════════════════════════════════════════════════════ */
+.hero {
+  text-align: center;
+  padding: 4rem 1rem 2.5rem;
+}
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(99,102,241,.12);
+  border: 1px solid rgba(99,102,241,.3);
+  color: #a5b4fc;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .35rem 1rem;
+  border-radius: 50px;
+  margin-bottom: 1.4rem;
+}
+.hero-pill span { width: 7px; height: 7px; background: #6366f1; border-radius: 50%; animation: pulse 2s infinite; }
+.hero h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  background: linear-gradient(135deg, #e8edf5 30%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: .75rem;
+}
+.hero p {
+  color: var(--text2);
+  font-size: 1.05rem;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STEPPER
+═══════════════════════════════════════════════════════ */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 2.5rem 0 2rem;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  position: relative;
+  z-index: 1;
+}
+.step-circle {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text3);
+  transition: var(--transition);
+}
+.step-circle svg { display: none; }
+.step-label {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--text3);
+  white-space: nowrap;
+  transition: color var(--transition);
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  margin: 0 .75rem;
+  margin-bottom: 1.6rem;
+  min-width: 40px;
+  transition: background var(--transition);
+}
+
+/* active step */
+.step-item.active .step-circle {
+  background: var(--accent-g);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: var(--accent-glow);
+}
+.step-item.active .step-label { color: #a5b4fc; }
+
+/* completed step */
+.step-item.done .step-circle {
+  background: rgba(16,185,129,.15);
+  border-color: var(--green);
+  color: var(--green);
+}
+.step-item.done .step-circle .num { display: none; }
+.step-item.done .step-circle svg { display: block; }
+.step-item.done .step-label { color: var(--green); }
+.step-line.done { background: var(--green); }
+
+/* ═══════════════════════════════════════════════════════
+   CARDS / PANELS
+═══════════════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+  animation: fadeUp .4s ease both;
+}
+.card-title {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.card-title::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 14px;
+  background: var(--accent-g);
+  border-radius: 2px;
+}
+
+/* step panels — hidden by default */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+/* ═══════════════════════════════════════════════════════
+   FORM GRID
+═══════════════════════════════════════════════════════ */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.1rem; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+.field { display: flex; flex-direction: column; gap: .45rem; }
+.field label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* ── Slider ─────────────────────────────────────── */
+.slider-wrap { display: flex; flex-direction: column; gap: .3rem; }
+.slider-header { display: flex; justify-content: space-between; align-items: baseline; }
+.slider-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 2.5rem;
+  text-align: right;
+  transition: color var(--transition);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--accent-g);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(99,102,241,.5);
+  cursor: pointer;
+  transition: transform .15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+/* ── Text inputs / selects ──────────────────────── */
+input[type="number"],
+input[type="text"],
+select {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .65rem 1rem;
+  font-size: .95rem;
+  color: var(--text);
+  font-family: inherit;
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  -webkit-appearance: none;
+}
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.2);
+}
+select option { background: #1a2236; }
+
+/* ── Toggle chips ───────────────────────────────── */
+.chip-group { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  padding: .4rem .95rem;
+  border-radius: 50px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: .83rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.selected {
+  background: rgba(99,102,241,.18);
+  border-color: var(--accent);
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NAV BUTTONS
+═══════════════════════════════════════════════════════ */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 2rem;
+  border-radius: 50px;
+  font-size: .95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition);
+}
+.btn-ghost {
+  background: var(--surface2);
+  border: 1.5px solid var(--border2);
+  color: var(--text2);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+
+.btn-primary {
+  background: var(--accent-g);
+  color: #fff;
+  box-shadow: var(--accent-glow);
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 0 50px rgba(99,102,241,.5); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.btn-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 1rem;
+  font-size: 1.05rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: .02em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SPINNER
+═══════════════════════════════════════════════════════ */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { transform: scale(.85); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+@keyframes fillBar {
+  from { width: 0 !important; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESULT PANEL
+═══════════════════════════════════════════════════════ */
+#resultPanel { display: none; }
+
+/* ── Score Gauge ────────────────────────────────── */
+.gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0 1.5rem;
+}
+.gauge {
+  position: relative;
+  width: 200px; height: 200px;
+}
+.gauge svg { overflow: visible; }
+.gauge-track { fill: none; stroke: var(--surface2); stroke-width: 14; }
+.gauge-fill  { fill: none; stroke-width: 14; stroke-linecap: round;
+  transform: rotate(-225deg); transform-origin: center;
+  transition: stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1),stroke .4s; }
+.gauge-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: .15rem;
+}
+.gauge-score {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -.03em;
+}
+.gauge-label { font-size: .72rem; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; }
+
+.severity-tag {
+  margin-top: 1rem;
+  padding: .45rem 1.6rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+/* ── Severity colours ───────────────────────────── */
+.sev-minimal   { color: var(--green);   border: 2px solid var(--green);   box-shadow: 0 0 20px rgba(16,185,129,.25); }
+.sev-mild      { color: var(--yellow);  border: 2px solid var(--yellow);  box-shadow: 0 0 20px rgba(245,158,11,.25); }
+.sev-moderate  { color: var(--orange);  border: 2px solid var(--orange);  box-shadow: 0 0 20px rgba(249,115,22,.25); }
+.sev-modsevere { color: var(--red);     border: 2px solid var(--red);     box-shadow: 0 0 20px rgba(239,68,68,.25); }
+.sev-severe    { color: var(--crimson); border: 2px solid var(--crimson); box-shadow: 0 0 20px rgba(220,38,38,.35); }
+
+/* gauge stroke colors */
+.stroke-minimal   { stroke: var(--green); }
+.stroke-mild      { stroke: var(--yellow); }
+.stroke-moderate  { stroke: var(--orange); }
+.stroke-modsevere { stroke: var(--red); }
+.stroke-severe    { stroke: var(--crimson); }
+
+/* text colors */
+.text-minimal   { color: var(--green); }
+.text-mild      { color: var(--yellow); }
+.text-moderate  { color: var(--orange); }
+.text-modsevere { color: var(--red); }
+.text-severe    { color: var(--crimson); }
+
+/* ── Result grid ────────────────────────────────── */
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 620px) { .result-grid { grid-template-columns: 1fr; } }
+
+/* ── Alert box ──────────────────────────────────── */
+.alert-box {
+  border-radius: var(--radius);
+  padding: 1.1rem 1.3rem;
+  font-size: .93rem;
+  line-height: 1.65;
+  display: flex;
+  gap: .9rem;
+  align-items: flex-start;
+  border: 1px solid;
+}
+.alert-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+.alert-ok      { background: rgba(16,185,129,.08);  border-color: rgba(16,185,129,.25); }
+.alert-mild    { background: rgba(245,158,11,.08);  border-color: rgba(245,158,11,.25); }
+.alert-warn    { background: rgba(249,115,22,.08);  border-color: rgba(249,115,22,.25); }
+.alert-danger  { background: rgba(239,68,68,.08);   border-color: rgba(239,68,68,.3); }
+.alert-severe  { background: rgba(220,38,38,.12);   border-color: rgba(220,38,38,.4);  animation: pulse-border 2s infinite; }
+@keyframes pulse-border { 0%,100%{border-color:rgba(220,38,38,.4)} 50%{border-color:rgba(220,38,38,.8)} }
+
+/* ── SHAP bars ──────────────────────────────────── */
+.feature-list { display: flex; flex-direction: column; gap: .85rem; }
+.feature-row { display: flex; flex-direction: column; gap: .3rem; }
+.feature-meta { display: flex; justify-content: space-between; align-items: baseline; }
+.feature-name {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: capitalize;
+}
+.feature-shap {
+  font-size: .78rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.feat-pos { color: var(--red); }
+.feat-neg { color: var(--green); }
+
+.bar-track {
+  height: 7px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  animation: fillBar .8s cubic-bezier(.4,0,.2,1) both;
+}
+.bar-pos { background: linear-gradient(90deg, #ef4444, #f97316); }
+.bar-neg { background: linear-gradient(90deg, #10b981, #06b6d4); }
+
+/* ── Stat tiles ─────────────────────────────────── */
+.stat-tile {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+.stat-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text2); }
+.stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.stat-sub   { font-size: .78rem; color: var(--text2); }
+
+/* ── Disclaimer ─────────────────────────────────── */
+.disclaimer {
+  margin-top: 1.5rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  border: 1px dashed var(--border2);
+  font-size: .78rem;
+  color: var(--text3);
+  line-height: 1.7;
+  text-align: center;
+}
+
+/* ── Retry button ───────────────────────────────── */
+.retry-row { display: flex; justify-content: center; margin-top: 1.5rem; }
+
+/* ── Error card ─────────────────────────────────── */
+#errorCard { display: none; }
+.error-inner {
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.3);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  color: var(--red);
+  font-size: .9rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROGRESS BAR (top of page)
+═══════════════════════════════════════════════════════ */
+.progress-bar-wrap {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  z-index: 999;
+  background: transparent;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent-g);
+  transition: width .35s ease;
+  box-shadow: 0 0 12px rgba(99,102,241,.8);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION DIVIDER
+═══════════════════════════════════════════════════════ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.8rem 0 1.2rem;
+}
+.section-divider span {
+  white-space: nowrap;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text3);
+}
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .card { padding: 1.4rem; }
+  .step-label { display: none; }
+}
+  </style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="topProgress" style="width:0%"></div>
+</div>
+
+<div class="page">
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-pill"><span></span>AI-Powered · Research Use Only</div>
+    <h1>Mental Health<br>Risk Assessment</h1>
+    <p>Answer a few questions about your lifestyle and environment. Our AI will estimate your PHQ-9 score and explain what's driving it.</p>
+  </header>
+
+  <!-- Stepper -->
+  <div class="stepper" id="stepper">
+    <div class="step-item active" data-step="0">
+      <div class="step-circle">
+        <span class="num">1</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step-label">Profile</span>
+    </div>
+    <div class="step-line" id="line-0"></div>
+    <div class="step-item" data-step="1">
+      <div class="step-circle">
+        <span class="num">2</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step-label">Lifestyle</span>
+    </div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-item" data-step="2">
+      <div class="step-circle">
+        <span class="num">3</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step-label">Stress</span>
+    </div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-item" data-step="3">
+      <div class="step-circle">
+        <span class="num">4</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="step-label">Environment</span>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 0 — PROFILE ══════════ -->
+  <div class="step-panel active" id="panel-0">
+    <div class="card">
+      <div class="card-title">Personal Profile</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>Age</label>
+          <input type="number" id="age" min="10" max="100" value="25" />
+        </div>
+
+        <div class="field">
+          <label>Monthly Income (₹)</label>
+          <input type="number" id="monthly_income" min="0" value="45000" />
+        </div>
+
+      </div>
+
+      <div class="section-divider"><span>Gender</span></div>
+      <div class="field">
+        <div class="chip-group" id="gender-chips">
+          <div class="chip selected" data-val="Female">Female</div>
+          <div class="chip" data-val="Male">Male</div>
+          <div class="chip" data-val="Other">Other</div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>Education</span></div>
+      <div class="field">
+        <div class="chip-group" id="education-chips">
+          <div class="chip" data-val="HighSchool">High School</div>
+          <div class="chip selected" data-val="Bachelor">Bachelor's</div>
+          <div class="chip" data-val="Master">Master's</div>
+          <div class="chip" data-val="PhD">PhD</div>
+          <div class="chip" data-val="Other">Other</div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>Employment</span></div>
+      <div class="field">
+        <div class="chip-group" id="employment-chips">
+          <div class="chip selected" data-val="Employed">Employed</div>
+          <div class="chip" data-val="Unemployed">Unemployed</div>
+          <div class="chip" data-val="Student">Student</div>
+          <div class="chip" data-val="Self-Employed">Self-Employed</div>
+        </div>
+      </div>
+
+      <div class="section-divider"><span>Location</span></div>
+      <div class="field">
+        <div class="chip-group" id="location-chips">
+          <div class="chip selected" data-val="Urban">Urban</div>
+          <div class="chip" data-val="Rural">Rural</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <span></span>
+      <button class="btn btn-primary" onclick="goStep(1)">Next — Lifestyle <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 1 — LIFESTYLE ══════════ -->
+  <div class="step-panel" id="panel-1">
+    <div class="card">
+      <div class="card-title">Daily Lifestyle</div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Work Hours / Week</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 80 hrs</span>
+              <span class="slider-value" id="val-work">45</span>
+            </div>
+            <input type="range" id="work_hours_per_week" min="0" max="80" step="0.5" value="45"
+              oninput="syncSlider('work_hours_per_week','val-work',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Sleep Hours / Night</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 12 hrs</span>
+              <span class="slider-value" id="val-sleep">7</span>
+            </div>
+            <input type="range" id="sleep_hours" min="0" max="12" step="0.5" value="7"
+              oninput="syncSlider('sleep_hours','val-sleep',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Exercise Hours / Week</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 20 hrs</span>
+              <span class="slider-value" id="val-exercise">3</span>
+            </div>
+            <input type="range" id="exercise_hours_week" min="0" max="20" step="0.5" value="3"
+              oninput="syncSlider('exercise_hours_week','val-exercise',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Screen Time / Day (hrs)</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 16 hrs</span>
+              <span class="slider-value" id="val-screen">6</span>
+            </div>
+            <input type="range" id="screen_time_hours" min="0" max="16" step="0.5" value="6"
+              oninput="syncSlider('screen_time_hours','val-screen',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Social Media / Day (hrs)</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 12 hrs</span>
+              <span class="slider-value" id="val-social_media">2</span>
+            </div>
+            <input type="range" id="social_media_hours" min="0" max="12" step="0.5" value="2"
+              oninput="syncSlider('social_media_hours','val-social_media',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Gaming / Day (hrs)</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 12 hrs</span>
+              <span class="slider-value" id="val-gaming">1</span>
+            </div>
+            <input type="range" id="gaming_hours" min="0" max="12" step="0.5" value="1"
+              oninput="syncSlider('gaming_hours','val-gaming',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Alcohol Drinks / Week</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 21</span>
+              <span class="slider-value" id="val-alcohol">2</span>
+            </div>
+            <input type="range" id="alcohol_use_weekly" min="0" max="21" step="1" value="2"
+              oninput="syncSlider('alcohol_use_weekly','val-alcohol',this.value)" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(0)"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Back</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Next — Stress <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 2 — STRESS ══════════ -->
+  <div class="step-panel" id="panel-2">
+    <div class="card">
+      <div class="card-title">Mental Health Indicators</div>
+      <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.4rem;">Rate each from 0 (none) to 10 (extreme)</p>
+      <div class="grid">
+
+        <div class="field">
+          <label>Financial Stress</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 10</span>
+              <span class="slider-value" id="val-financial">5</span>
+            </div>
+            <input type="range" id="financial_stress" min="0" max="10" step="0.5" value="5"
+              oninput="syncSlider('financial_stress','val-financial',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Academic / Job Stress</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 10</span>
+              <span class="slider-value" id="val-jobstress">5</span>
+            </div>
+            <input type="range" id="academic_or_job_stress" min="0" max="10" step="0.5" value="5"
+              oninput="syncSlider('academic_or_job_stress','val-jobstress',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Burnout Score</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 10</span>
+              <span class="slider-value" id="val-burnout">4</span>
+            </div>
+            <input type="range" id="burnout_score" min="0" max="10" step="0.5" value="4"
+              oninput="syncSlider('burnout_score','val-burnout',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Social Support</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0=None · 10=Strong</span>
+              <span class="slider-value" id="val-social">6</span>
+            </div>
+            <input type="range" id="social_support_score" min="0" max="10" step="0.5" value="6"
+              oninput="syncSlider('social_support_score','val-social',this.value)" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(1)"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next — Environment <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ══════════ STEP 3 — ENVIRONMENT ══════════ -->
+  <div class="step-panel" id="panel-3">
+    <div class="card">
+      <div class="card-title">Environmental Factors</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>Avg Temperature (°C)</label>
+          <input type="number" id="avg_temperature_c" step="0.5" value="28" />
+        </div>
+
+        <div class="field">
+          <label>Humidity (%)</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 100 %</span>
+              <span class="slider-value" id="val-humidity">60</span>
+            </div>
+            <input type="range" id="humidity_percent" min="0" max="100" step="1" value="60"
+              oninput="syncSlider('humidity_percent','val-humidity',this.value)" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Air Quality Index</label>
+          <div class="slider-wrap">
+            <div class="slider-header">
+              <span style="font-size:.8rem;color:var(--text2)">0 – 500</span>
+              <span class="slider-value" id="val-aqi">100</span>
+            </div>
+            <input type="range" id="air_quality_index" min="0" max="500" step="5" value="100"
+              oninput="syncSlider('air_quality_index','val-aqi',this.value)" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-primary btn-submit" id="submitBtn" onclick="submitForm()">
+        <span id="submitLabel">Analyse My Risk</span>
+      </button>
+    </div>
+
+    <div id="errorCard">
+      <div class="error-inner" id="errorText"></div>
+    </div>
+
+    <div class="nav-row" style="margin-top:.5rem">
+      <button class="btn btn-ghost" onclick="goStep(2)"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Back</button>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- ══════════ RESULT PANEL ══════════ -->
+  <div id="resultPanel">
+
+    <!-- Score + severity -->
+    <div class="card" style="animation: scaleIn .5s ease both;">
+      <div class="card-title">Your Assessment Result</div>
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg viewBox="0 0 200 200" width="200" height="200">
+            <!-- 270° arc from bottom-left to bottom-right -->
+            <!-- cx=100 cy=100 r=80 -->
+            <circle class="gauge-track" cx="100" cy="100" r="80"
+              stroke-dasharray="339.29 113.1"
+              transform="rotate(-225 100 100)" />
+            <circle class="gauge-fill" id="gaugeFill" cx="100" cy="100" r="80" />
+          </svg>
+          <div class="gauge-center">
+            <span class="gauge-score" id="gScore">—</span>
+            <span class="gauge-label">PHQ-9</span>
+          </div>
+        </div>
+        <div class="severity-tag" id="sevTag">—</div>
+      </div>
+    </div>
+
+    <!-- Stats + Alert -->
+    <div class="result-grid">
+      <div class="stat-tile">
+        <div class="stat-label">Score Range</div>
+        <div class="stat-value" id="statRange">—</div>
+        <div class="stat-sub">PHQ-9 scale 0 – 27</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Risk Level</div>
+        <div class="stat-value" id="statLevel">—</div>
+        <div class="stat-sub">out of 5 severity tiers</div>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div id="alertBox" style="margin-bottom:1.25rem;"></div>
+
+    <!-- SHAP Features -->
+    <div class="card" style="animation: fadeUp .5s .15s ease both; opacity:0; animation-fill-mode:both;">
+      <div class="card-title">Top Contributing Factors</div>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.2rem;">
+        Red bars push your score <strong style="color:var(--red)">higher</strong> ·
+        Green bars push it <strong style="color:var(--green)">lower</strong>
+      </p>
+      <div class="feature-list" id="featureList"></div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      ⚠️ <strong>Medical Disclaimer:</strong> This tool does not provide medical diagnosis. It is for informational and educational purposes only. PHQ-9 scores should be interpreted by a qualified mental health professional. If you are in distress, please contact a helpline immediately.
+    </div>
+
+    <!-- Retry -->
+    <div class="retry-row">
+      <button class="btn btn-ghost" onclick="resetToForm()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 0 1.2-3.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 4v3h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Start Over
+      </button>
+    </div>
+
+  </div><!-- /resultPanel -->
+
+</div><!-- /page -->
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+const API = "http://localhost:8000";
+const TOTAL_STEPS = 4;
+
+// ══════════════════════════════════════════════════════
+//  STEPPER
+// ══════════════════════════════════════════════════════
+let currentStep = 0;
+
+function goStep(n) {
+  document.getElementById(`panel-${currentStep}`).classList.remove("active");
+  document.getElementById(`panel-${n}`).classList.add("active");
+
+  // Update stepper UI
+  document.querySelectorAll(".step-item").forEach((el, i) => {
+    el.classList.remove("active","done");
+    if (i < n)  el.classList.add("done");
+    if (i === n) el.classList.add("active");
+  });
+  document.querySelectorAll(".step-line").forEach((el, i) => {
+    el.classList.toggle("done", i < n);
+  });
+
+  // Top progress bar
+  document.getElementById("topProgress").style.width = `${((n + 1) / TOTAL_STEPS) * 100}%`;
+
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ══════════════════════════════════════════════════════
+//  CHIP GROUPS
+// ══════════════════════════════════════════════════════
+document.querySelectorAll(".chip-group").forEach(group => {
+  group.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      group.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+    });
+  });
+});
+
+function getChipVal(groupId) {
+  const sel = document.querySelector(`#${groupId} .chip.selected`);
+  return sel ? sel.dataset.val : null;
+}
+
+// ══════════════════════════════════════════════════════
+//  SLIDER SYNC
+// ══════════════════════════════════════════════════════
+function syncSlider(inputId, valId, v) {
+  document.getElementById(valId).textContent = parseFloat(v) % 1 === 0 ? parseInt(v) : parseFloat(v);
+}
+
+// ══════════════════════════════════════════════════════
+//  BUILD PAYLOAD
+// ══════════════════════════════════════════════════════
+function buildPayload() {
+  const num = id => parseFloat(document.getElementById(id).value);
+  return {
+    age:                    num("age"),
+    gender:                 getChipVal("gender-chips"),
+    education_level:        getChipVal("education-chips"),
+    employment_status:      getChipVal("employment-chips"),
+    urban_or_rural:         getChipVal("location-chips"),
+    monthly_income:         num("monthly_income"),
+    financial_stress:       num("financial_stress"),
+    work_hours_per_week:    num("work_hours_per_week"),
+    sleep_hours:            num("sleep_hours"),
+    exercise_hours_week:    num("exercise_hours_week"),
+    screen_time_hours:      num("screen_time_hours"),
+    social_support_score:   num("social_support_score"),
+    alcohol_use_weekly:     num("alcohol_use_weekly"),
+    academic_or_job_stress: num("academic_or_job_stress"),
+    burnout_score:          num("burnout_score"),
+    avg_temperature_c:      num("avg_temperature_c"),
+    humidity_percent:       num("humidity_percent"),
+    air_quality_index:      num("air_quality_index"),
+    social_media_hours:     num("social_media_hours"),
+    gaming_hours:           num("gaming_hours"),
+  };
+}
+
+// ══════════════════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════════════════
+async function submitForm() {
+  const btn   = document.getElementById("submitBtn");
+  const label = document.getElementById("submitLabel");
+  const errCard = document.getElementById("errorCard");
+  errCard.style.display = "none";
+
+  btn.disabled = true;
+  label.innerHTML = `<span class="spinner"></span> &nbsp;Analysing…`;
+
+  const payload = buildPayload();
+
+  try {
+    const resp = await fetch(`${API}/predict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      const e = await resp.json();
+      throw new Error(e.detail || `API error ${resp.status}`);
+    }
+    const data = await resp.json();
+    renderResult(data);
+  } catch (err) {
+    errCard.style.display = "block";
+    document.getElementById("errorText").textContent = `❌ ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    label.textContent = "Analyse My Risk";
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER RESULT
+// ══════════════════════════════════════════════════════
+const SEV_MAP = {
+  1: { cls: "sev-minimal",   stroke: "stroke-minimal",   text: "text-minimal",   alert: "alert-ok",     icon: "✅", range: "0 – 4"   },
+  2: { cls: "sev-mild",      stroke: "stroke-mild",      text: "text-mild",      alert: "alert-mild",   icon: "💛", range: "5 – 9"   },
+  3: { cls: "sev-moderate",  stroke: "stroke-moderate",  text: "text-moderate",  alert: "alert-warn",   icon: "⚠️", range: "10 – 14" },
+  4: { cls: "sev-modsevere", stroke: "stroke-modsevere", text: "text-modsevere", alert: "alert-danger", icon: "🔶", range: "15 – 19" },
+  5: { cls: "sev-severe",    stroke: "stroke-severe",    text: "text-severe",    alert: "alert-severe", icon: "🚨", range: "20 – 27" },
+};
+
+function renderResult(data) {
+  const s = data.severity_level;
+  const m = SEV_MAP[s] || SEV_MAP[3];
+
+  // Hide stepper / form panels, show result
+  document.getElementById("stepper").style.display = "none";
+  ["panel-0","panel-1","panel-2","panel-3"].forEach(id =>
+    document.getElementById(id).style.display = "none");
+
+  const rp = document.getElementById("resultPanel");
+  rp.style.display = "block";
+
+  // ── Gauge ────────────────────────────────────────────────
+  // Full arc = 270° on circle r=80 → circumference portion
+  // Total arc circumference for 270° = 2πr × (270/360) = 2×π×80×0.75 ≈ 376.99
+  // Track is already set with stroke-dasharray "339.29 113.1" (2πr × 0.75, rest)
+  const CIRC   = 2 * Math.PI * 80;          // 502.65
+  const ARC    = CIRC * 0.75;               // 376.99 — the 270° arc
+  const frac   = Math.min(data.phq9_score / 27, 1);
+  const filled = frac * ARC;
+
+  const fill = document.getElementById("gaugeFill");
+  fill.classList.remove("stroke-minimal","stroke-mild","stroke-moderate","stroke-modsevere","stroke-severe");
+  fill.classList.add(m.stroke);
+  fill.style.strokeDasharray = `${filled} ${CIRC - filled}`;
+  fill.style.strokeDashoffset = 0;
+
+  // Score text
+  const gScore = document.getElementById("gScore");
+  gScore.textContent = data.phq9_score.toFixed(1);
+  gScore.className = `gauge-score ${m.text}`;
+
+  // Severity tag
+  const tag = document.getElementById("sevTag");
+  tag.textContent = data.severity;
+  tag.className = `severity-tag ${m.cls}`;
+
+  // Stats
+  document.getElementById("statRange").textContent = m.range;
+  document.getElementById("statRange").className = `stat-value ${m.text}`;
+  document.getElementById("statLevel").textContent = `Level ${s} / 5`;
+  document.getElementById("statLevel").className = `stat-value ${m.text}`;
+
+  // Alert
+  document.getElementById("alertBox").innerHTML = `
+    <div class="alert-box ${m.alert}">
+      <span class="alert-icon">${m.icon}</span>
+      <div>${data.recommendation}</div>
+    </div>`;
+
+  // SHAP bars
+  const maxAbs = Math.max(...data.top_features.map(f => Math.abs(f.shap_value)), .001);
+  document.getElementById("featureList").innerHTML = data.top_features.map(f => {
+    const pct  = Math.round((Math.abs(f.shap_value) / maxAbs) * 100);
+    const pos  = f.shap_value >= 0;
+    const name = f.feature.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    const cls  = pos ? "feat-pos" : "feat-neg";
+    const bar  = pos ? "bar-pos"  : "bar-neg";
+    const sign = pos ? "+" : "";
+    return `
+      <div class="feature-row">
+        <div class="feature-meta">
+          <span class="feature-name">${name}</span>
+          <span class="feature-shap ${cls}">${sign}${f.shap_value.toFixed(3)} SHAP</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill ${bar}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Top progress bar → 100%
+  document.getElementById("topProgress").style.width = "100%";
+
+  rp.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ══════════════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════════════
+function resetToForm() {
+  document.getElementById("resultPanel").style.display = "none";
+  document.getElementById("stepper").style.display = "flex";
+  ["panel-0","panel-1","panel-2","panel-3"].forEach(id =>
+    document.getElementById(id).style.display = "");
+  goStep(0);
+}
+</script>
+</body>
+</html>
